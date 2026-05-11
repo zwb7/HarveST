@@ -2,8 +2,6 @@
 
 HarveST is a comprehensive Python package for spatial transcriptomics data analysis that combines graph neural networks with attention mechanisms for spatial domain identification and spatial variable gene discovery.
 
-![](./framework.png)
-
 ##  Key Features
 
 ### Spatial Domain Clustering
@@ -57,7 +55,7 @@ For a comprehensive analysis combining both clustering and spatial gene discover
 
 ```bash
 # Launch Jupyter notebook
-jupyter notebook examples/HarveST_Complete_Analysis.ipynb
+jupyter notebook notebooks/HarveST_Complete_Analysis.ipynb
 ```
 
 ### Basic Clustering Analysis
@@ -103,7 +101,7 @@ for domain, genes_df in svg_results.items():
 
 - **`examples/example_usage_cluster.py`**: Clustering analysis examples
 - **`examples/example_usage_svg.py`**: Spatial variable gene discovery examples
-- **`examples/HarveST_Complete_Analysis.ipynb`**: Complete interactive workflow
+- **`notebooks/HarveST_Complete_Analysis.ipynb`**: Complete interactive workflow
 
 ### Running Examples
 
@@ -115,7 +113,7 @@ python examples/example_usage_cluster.py --preprocessed
 python examples/example_usage_svg.py --direct-interface
 
 # Interactive complete analysis
-jupyter notebook examples/HarveST_Complete_Analysis.ipynb
+jupyter notebook notebooks/HarveST_Complete_Analysis.ipynb
 ```
 
 ## Core Modules
@@ -184,6 +182,11 @@ See `environment.yml` for the complete list of dependencies.
 
 ```angelscript
 HarveST/
+├── assets/                    # Static assets and example figures
+│   └── figures/
+├── Data/                      # Example data kept in-place for script compatibility
+│   └── 151674/
+├── docs/                      # Repository notes and structure docs
 ├── harvest/                    # Main package
 │   ├── core.py                # Main HarveST class
 │   ├── spatial_gene_discovery.py  # SVG discovery module
@@ -191,11 +194,12 @@ HarveST/
 │   ├── model/                # Graph neural network models
 │   ├── clustering/           # Clustering algorithms
 │   └── utils/                # Utility functions
-├── examples/                  # Example scripts and notebooks
-│   ├── HarveST_Complete_Analysis.ipynb
+├── examples/                  # Example scripts and local config
 │   ├── example_usage_cluster.py
 │   ├── example_usage_svg.py
 │   └── config.yaml
+├── notebooks/                 # Interactive analysis notebooks
+│   └── HarveST_Complete_Analysis.ipynb
 └── README.md
 ```
 
