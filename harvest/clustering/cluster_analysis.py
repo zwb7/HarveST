@@ -18,14 +18,19 @@ class ClusterAnalysis:
         np.random.seed(random_seed)
         import rpy2.robjects as robjects
         robjects.r.library("mclust")
-        import rpy2.robjects.numpy2ri
-        rpy2.robjects.numpy2ri.activate()
+        from rpy2.robjects import FloatVector
         
         r_random_seed = robjects.r['set.seed']
         r_random_seed(random_seed)
         rmclust = robjects.r['Mclust']
-        res = rmclust(rpy2.robjects.numpy2ri.numpy2rpy(adata.obsm[used_obsm]), 
-                     num_cluster, modelNames)
+        embedding = np.asarray(adata.obsm[used_obsm], dtype=np.float64, order="C")
+        r_matrix = robjects.r.matrix(
+            FloatVector(embedding.ravel(order="C")),
+            nrow=embedding.shape[0],
+            ncol=embedding.shape[1],
+            byrow=True,
+        )
+        res = rmclust(r_matrix, num_cluster, modelNames)
         mclust_res = np.array(res[-2])
         
         adata.obs['mclust'] = mclust_res
