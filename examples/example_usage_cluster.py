@@ -56,9 +56,9 @@ def main():
     
     # Paths to your data
     # matrix_dir = "./harvest_results"  # Directory with preprocessed matrices
-    matrix_dir = "../Data/151674/preprocessed"  # Directory with preprocessed matrices
+    matrix_dir = "../Dataset/LIBD/151674/preprocessed/"  # Directory with preprocessed matrices
     
-    original_data_path = "../Data/151674/"  # Original Visium data
+    original_data_path = "../Dataset/LIBD/151674/"  # Original Visium data
     
     # Check if required directories and files exist
     if not os.path.exists(matrix_dir):

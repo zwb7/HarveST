@@ -9,12 +9,12 @@ with open("README.md", "r", encoding="utf-8") as fh:
 setup(
     name="harvest",
     version="1.0.0",
-    author="Junning",
-    author_email="786951979@qq.com",
+    author="zwb7",
+    author_email="",
     description="HarveST: A Graph Neural Network for Spatial Transcriptomics Clustering",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/Seven595/HarveST",
+    url="https://github.com/zwb7/HarveST.git",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 4 - Beta",
@@ -32,9 +32,4 @@ setup(
     extras_require={
         "dev": ["pytest", "black", "flake8"],
     },
-    entry_points={
-        "console_scripts": [
-            "harvest=harvest.cli:main",
-        ],
-    },
-) 
+)
