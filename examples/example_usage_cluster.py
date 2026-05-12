@@ -27,8 +27,9 @@ def main():
     # Initialize HarveST
     harvest = Harvest(
         config="config.yaml",
-        output_dir="./harvest_results",
-        random_seed=2023
+        output_dir="./results/preprocess_cluster",
+        random_seed=2023,
+        device="cuda:7",
     )
     
     # Preprocess data
@@ -52,7 +53,7 @@ def main():
     # Example 2: Using preprocessed matrices with original data
     print("Running clustering on preprocessed data...")
     
-    harvest2 = Harvest(output_dir="./harvest_results_3")
+    harvest2 = Harvest(output_dir="./results/cluster", device="cuda:7")
     
     # Paths to your data
     # matrix_dir = "./harvest_results"  # Directory with preprocessed matrices

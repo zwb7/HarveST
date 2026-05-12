@@ -25,7 +25,7 @@ class Harvest:
     """
     
     def __init__(self, config: Optional[Union[str, Dict]] = None, 
-                 output_dir: str = "./harvest_output",
+                 output_dir: str = "./results",
                  random_seed: int = 2023,
                  device: Optional[str] = None):
         """
@@ -40,7 +40,7 @@ class Harvest:
         random_seed : int
             Random seed for reproducibility
         device : str, optional
-            Device to use ('cuda' or 'cpu'). Auto-detected if None.
+            Device to use. Defaults to 'cuda:7' when not specified.
         """
         # Load configuration
         if config is None:
@@ -63,9 +63,17 @@ class Harvest:
         
         # Set device
         if device is None:
-            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        else:
-            self.device = torch.device(device)
+            device = "cuda:7"
+        if device.startswith("cuda"):
+            if not torch.cuda.is_available():
+                raise RuntimeError(f"Requested device '{device}', but CUDA is not available.")
+            if ":" in device:
+                device_index = int(device.split(":", 1)[1])
+                if device_index >= torch.cuda.device_count():
+                    raise RuntimeError(
+                        f"Requested device '{device}', but only {torch.cuda.device_count()} CUDA devices are visible."
+                    )
+        self.device = torch.device(device)
             
         self.logger.info(f"HarveST initialized with device: {self.device}")
         

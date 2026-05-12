@@ -9,7 +9,7 @@ def example_spatial_gene_discovery():
     print("Running spatial gene discovery...")
     
     # Initialize HarveST (assuming you have preprocessed data)
-    harvest = Harvest(output_dir="./harvest_results_svg")
+    harvest = Harvest(output_dir="./results/spatial_genes", device="cuda:7")
     
     # Load preprocessed data
     matrix_dir = "../Data/151674/preprocessed"  # Directory with preprocessed matrices
