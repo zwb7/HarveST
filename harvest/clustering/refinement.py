@@ -138,8 +138,8 @@ class ClusterTrainer:
         # Implementation similar to original code but with error handling
         try:
             clust_uncer_id = [[] for _ in range(self.config['n_clusters'])]
-            class_id = m_res[-2]
-            class_uncer = m_res[-1]
+            class_id = np.asarray(m_res[-2], dtype=int)
+            class_uncer = np.asarray(m_res[-1], dtype=float)
             
             for i in range(len(class_id)):
                 clust_uncer_id[int(class_id[i] - 1)].append({i: class_uncer[i]})
@@ -148,7 +148,7 @@ class ClusterTrainer:
             result = []
             for inner_list in clust_uncer_id:
                 sorted_dict_list = sorted(inner_list, key=lambda d: list(d.values())[0])
-                select_count = int(len(sorted_dict_list) * svm_ratio)
+                select_count = max(1, int(len(sorted_dict_list) * svm_ratio)) if sorted_dict_list else 0
                 selected_dict_list = sorted_dict_list[:select_count]
                 result.append(selected_dict_list)
             
@@ -156,6 +156,9 @@ class ClusterTrainer:
             for inner_list in result:
                 for i in inner_list:
                     id_for_svm.append(list(i.keys())[0])
+            id_for_svm = np.asarray(id_for_svm, dtype=int)
+            if id_for_svm.size == 0:
+                raise ValueError("No samples selected for cluster-specific SVM refinement")
             
             # Train SVM and predict
             X_svm = embedding_att[id_for_svm]
@@ -189,17 +192,19 @@ class ClusterTrainer:
         try:
             # Similar implementation with global confidence selection
             clust_uncer_id = []
-            class_id = m_res[-2]
-            class_uncer = m_res[-1]
+            class_id = np.asarray(m_res[-2], dtype=int)
+            class_uncer = np.asarray(m_res[-1], dtype=float)
             
             for i in range(len(class_id)):
                 clust_uncer_id.append({i: class_uncer[i]})
             
             sorted_dict_list = sorted(clust_uncer_id, key=lambda d: list(d.values())[0])
-            select_count = int(len(sorted_dict_list) * svm_ratio)
+            select_count = max(1, int(len(sorted_dict_list) * svm_ratio)) if sorted_dict_list else 0
             selected_dict_list = sorted_dict_list[:select_count]
             
-            id_for_svm = [list(i.keys())[0] for i in selected_dict_list]
+            id_for_svm = np.asarray([list(i.keys())[0] for i in selected_dict_list], dtype=int)
+            if id_for_svm.size == 0:
+                raise ValueError("No samples selected for global SVM refinement")
             
             X_svm = embedding_att[id_for_svm]
             Y_svm = class_id[id_for_svm]
