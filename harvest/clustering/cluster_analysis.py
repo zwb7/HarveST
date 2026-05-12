@@ -18,7 +18,7 @@ class ClusterAnalysis:
         np.random.seed(random_seed)
         import rpy2.robjects as robjects
         robjects.r.library("mclust")
-        from rpy2.robjects import FloatVector
+        from rpy2.robjects import FloatVector, StrVector
         
         r_random_seed = robjects.r['set.seed']
         r_random_seed(random_seed)
@@ -29,6 +29,14 @@ class ClusterAnalysis:
             nrow=embedding.shape[0],
             ncol=embedding.shape[1],
             byrow=True,
+        )
+        r_set_rownames = robjects.r["rownames<-"]
+        r_set_colnames = robjects.r["colnames<-"]
+        r_matrix = r_set_rownames(
+            r_matrix, StrVector([str(i) for i in range(embedding.shape[0])])
+        )
+        r_matrix = r_set_colnames(
+            r_matrix, StrVector([f"dim_{i}" for i in range(embedding.shape[1])])
         )
         res = rmclust(r_matrix, num_cluster, modelNames)
         mclust_res = np.array(res[-2])
