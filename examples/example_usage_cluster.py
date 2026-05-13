@@ -3,10 +3,20 @@ Example usage of HarveST package
 """
 
 import os
+from datetime import datetime
 from harvest import Harvest
 import torch
 import numpy as np
 import random
+
+
+def make_run_output_dir(base_dir: str, data_path: str) -> str:
+    """Create a per-sample, per-run output directory."""
+    sample_id = os.path.basename(os.path.normpath(data_path)) or "unknown_sample"
+    run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+    return os.path.join(base_dir, sample_id, run_id)
+
+
 def setup_seed(seed):
     """Set random seed for reproducibility across all libraries."""
     torch.manual_seed(seed)
@@ -52,14 +62,15 @@ def main():
     
     # Example 2: Using preprocessed matrices with original data
     print("Running clustering on preprocessed data...")
-    
-    harvest2 = Harvest(output_dir="./results/cluster", device="cuda:7")
-    
+
     # Paths to your data
     # matrix_dir = "./harvest_results"  # Directory with preprocessed matrices
     matrix_dir = "../Dataset/LIBD/151674/preprocessed/"  # Directory with preprocessed matrices
     
     original_data_path = "../Dataset/LIBD/151674/"  # Original Visium data
+    output_dir = make_run_output_dir("./results/cluster", original_data_path)
+    
+    harvest2 = Harvest(output_dir=output_dir, device="cuda:7")
     
     # Check if required directories and files exist
     if not os.path.exists(matrix_dir):

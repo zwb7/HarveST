@@ -1,0 +1,27 @@
+# HarveST raw-data preprocessing config.
+
+data:
+  sample_id: "151674"
+  data_path: "../Dataset/LIBD/151674"
+  count_file: "filtered_feature_bc_matrix.h5"
+  load_ground_truth: true
+  truth_file_suffix: "_truth.txt"
+
+preprocessing:
+  n_top_genes: 3000
+  n_bins: 5
+  parallel_mi: true
+  n_jobs: -1
+  spatial_params:
+    p: 1.0
+    radius: 150
+    start: 1
+    end: 300
+
+runtime:
+  device: "cpu"
+  random_seed: 2023
+
+output:
+  root: "./results/preprocessed"
+  run_name:
