@@ -113,7 +113,7 @@ class ClusterAnalysis:
             ax.set_yticks([])
             
             title = key
-            if "Ground Truth" in adata.obs:
+            if key != "Ground Truth" and "Ground Truth" in adata.obs:
                 obs_df = adata.obs[[key, "Ground Truth"]].dropna()
                 if not obs_df.empty:
                     ari = adjusted_rand_score(obs_df[key], obs_df["Ground Truth"])

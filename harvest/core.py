@@ -638,7 +638,7 @@ class Harvest:
         """Generate spatial plots for clustering results."""
         from .clustering.cluster_analysis import ClusterAnalysis
         
-        plot_keys = ["mclust", "svm1_or_clust_refined"]
+        plot_keys = ["Ground Truth", "mclust", "svm1_or_clust_refined"]
         output_file = os.path.join(self.output_dir, "clustering_comparison.png")
         ClusterAnalysis.plot_spatial(adata, "harvest_results", plot_keys, output_file=output_file)
     
