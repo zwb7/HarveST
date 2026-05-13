@@ -21,7 +21,7 @@ model:
   coor_ratio: 0.8
 
 training:
-  epochs: 2000
+  epochs: 3000
   learning_rate: 0.001
   weight_decay: 0.000001
   g_loss_w: 1.0
@@ -37,7 +37,7 @@ clustering:
 
 runtime:
   device: "cuda:7"
-  random_seed: 2023
+  random_seed: 2024
   r_libs_user: "/data1/zhangwenbo/R/library"
 
 output:
