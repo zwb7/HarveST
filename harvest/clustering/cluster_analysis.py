@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -72,25 +73,37 @@ class ClusterAnalysis:
         return new_type
     
     @staticmethod
-    def plot_spatial(adata, section_id: str, cluster_keys: Optional[Union[str, List[str]]] = None):
-        """Create and save spatial plots for clustering results."""
+    def plot_spatial(
+        adata,
+        section_id: str,
+        cluster_keys: Optional[Union[str, List[str]]] = None,
+        output_file: Optional[str] = None,
+    ):
+        """Create and save one comparison figure for clustering results."""
         if cluster_keys is None:
             cluster_keys = ["svm1_or_clust_refined"]
         elif isinstance(cluster_keys, str):
             cluster_keys = [cluster_keys]
-        
-        plt.rcParams["figure.figsize"] = (10, 8)
-        
-        for key in cluster_keys:
-            if key not in adata.obs:
-                continue
-            
-            fig, ax = plt.subplots()
-            
-            # Plot prediction
-            sc.pl.spatial(adata, basis="spatial", color=key, show=False, ax=ax,
-                         legend_fontoutline=2, legend_fontsize=15, legend_loc=None)
-            
+
+        available_keys = [key for key in cluster_keys if key in adata.obs]
+        if not available_keys:
+            return None
+
+        fig_width = 8 * len(available_keys)
+        fig, axes = plt.subplots(1, len(available_keys), figsize=(fig_width, 8), squeeze=False)
+
+        for ax, key in zip(axes.flat, available_keys):
+            sc.pl.spatial(
+                adata,
+                basis="spatial",
+                color=key,
+                show=False,
+                ax=ax,
+                legend_fontoutline=2,
+                legend_fontsize=12,
+                legend_loc=None,
+            )
+
             # Remove spines and ticks
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)
@@ -99,11 +112,21 @@ class ClusterAnalysis:
             ax.set_xticks([])
             ax.set_yticks([])
             
-            # Set labels
-            ax.set_xlabel('HarveST', fontsize=25)
+            title = key
+            if "Ground Truth" in adata.obs:
+                obs_df = adata.obs[[key, "Ground Truth"]].dropna()
+                if not obs_df.empty:
+                    ari = adjusted_rand_score(obs_df[key], obs_df["Ground Truth"])
+                    title = f"{key}\nARI = {ari:.4f}"
+
+            ax.set_title(title, fontsize=18)
+            ax.set_xlabel('HarveST', fontsize=18)
             ax.set_ylabel('')
-            
-            # Save figure
-            filename = f"HarveST_{section_id}_{key}-formal.png"
-            plt.savefig(filename, bbox_inches='tight', pad_inches=0, dpi=300)
-            plt.close() 
+
+        if output_file is None:
+            output_file = f"HarveST_{section_id}_clustering_comparison.png"
+        os.makedirs(os.path.dirname(output_file) or ".", exist_ok=True)
+        plt.tight_layout()
+        plt.savefig(output_file, bbox_inches='tight', pad_inches=0.1, dpi=300)
+        plt.close(fig)
+        return output_file

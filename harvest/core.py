@@ -639,7 +639,8 @@ class Harvest:
         from .clustering.cluster_analysis import ClusterAnalysis
         
         plot_keys = ["mclust", "svm1_or_clust_refined"]
-        ClusterAnalysis.plot_spatial(adata, "harvest_results", plot_keys)
+        output_file = os.path.join(self.output_dir, "clustering_comparison.png")
+        ClusterAnalysis.plot_spatial(adata, "harvest_results", plot_keys, output_file=output_file)
     
     def _get_default_config(self) -> Dict:
         """Get default configuration."""
