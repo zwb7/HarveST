@@ -94,6 +94,10 @@ def run(config_path: str) -> None:
         n_top_genes=int(data_cfg.get("n_top_genes", 3000)),
         load_ground_truth=bool(data_cfg.get("load_ground_truth", True)),
         truth_file_suffix=str(data_cfg.get("truth_file_suffix", "_truth.txt")),
+        truth_file=data_cfg.get("truth_file"),
+        truth_id_column=data_cfg.get("truth_id_column"),
+        truth_label_column=data_cfg.get("truth_label_column"),
+        truth_sep=data_cfg.get("truth_sep"),
     )
 
     n_clusters = int(clustering_cfg.pop("n_clusters", data_cfg.get("n_clusters", 7)))

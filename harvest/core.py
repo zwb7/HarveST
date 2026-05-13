@@ -92,7 +92,11 @@ class Harvest:
                    parallel_mi: bool = True,
                    n_jobs: int = -1,
                    load_ground_truth: bool = True,
-                   truth_file_suffix: str = "_truth.txt") -> Dict[str, Any]:
+                   truth_file_suffix: str = "_truth.txt",
+                   truth_file: Optional[str] = None,
+                   truth_id_column: Optional[str] = None,
+                   truth_label_column: Optional[str] = None,
+                   truth_sep: Optional[str] = None) -> Dict[str, Any]:
         """
         Preprocess spatial transcriptomics data.
         
@@ -135,7 +139,14 @@ class Harvest:
         
         # Try to load ground truth if requested
         if load_ground_truth:
-            self._try_load_ground_truth(data_path, truth_file_suffix)
+            self._try_load_ground_truth(
+                data_path,
+                truth_file_suffix,
+                truth_file=truth_file,
+                truth_id_column=truth_id_column,
+                truth_label_column=truth_label_column,
+                truth_sep=truth_sep,
+            )
         
         adata_processed = preprocessor.preprocess_data(self.adata, n_top_genes)
         
@@ -363,7 +374,11 @@ class Harvest:
                             adata_file: Optional[str] = None,
                             n_top_genes: int = 3000,
                             load_ground_truth: bool = True,
-                            truth_file_suffix: str = "_truth.txt") -> Dict[str, Any]:
+                            truth_file_suffix: str = "_truth.txt",
+                            truth_file: Optional[str] = None,
+                            truth_id_column: Optional[str] = None,
+                            truth_label_column: Optional[str] = None,
+                            truth_sep: Optional[str] = None) -> Dict[str, Any]:
         """
         Load previously preprocessed data from directory and reconstruct AnnData.
         
@@ -415,6 +430,17 @@ class Harvest:
                 # Verify the loaded AnnData matches the preprocessed matrices
                 if self._verify_adata_consistency(adata_processed, feat_cell, feat_gene):
                     self.preprocessed_data["adata_processed"] = adata_processed
+                    self.adata = adata_processed
+                    if load_ground_truth:
+                        self._try_load_ground_truth(
+                            data_path,
+                            truth_file_suffix,
+                            truth_file=truth_file,
+                            truth_id_column=truth_id_column,
+                            truth_label_column=truth_label_column,
+                            truth_sep=truth_sep,
+                        )
+                        self.preprocessed_data["adata_processed"] = self.adata
                     self.logger.info("Preprocessed AnnData loaded and verified successfully")
                     adata_loaded = True
                 else:
@@ -438,7 +464,14 @@ class Harvest:
             
             # Try to load ground truth if requested
             if load_ground_truth:
-                self._try_load_ground_truth(data_path, truth_file_suffix)
+                self._try_load_ground_truth(
+                    data_path,
+                    truth_file_suffix,
+                    truth_file=truth_file,
+                    truth_id_column=truth_id_column,
+                    truth_label_column=truth_label_column,
+                    truth_sep=truth_sep,
+                )
             
             # Preprocess data to match the loaded matrices
             adata_processed = preprocessor.preprocess_data(self.adata, n_top_genes)
@@ -511,24 +544,6 @@ class Harvest:
             self.logger.warning(f"Error during AnnData consistency check: {e}")
             return False
 
-    def _try_load_ground_truth(self, data_path: str, truth_file_suffix: str):
-        """Try to load ground truth labels if available."""
-        try:
-            # Extract section ID from path
-            section_id = os.path.basename(data_path.rstrip('/'))
-            truth_file = os.path.join(data_path, f"{section_id}{truth_file_suffix}")
-            
-            if os.path.exists(truth_file):
-                self.logger.info(f"Loading ground truth from {truth_file}")
-                ann_df = pd.read_csv(truth_file, sep='\t', header=None, index_col=0)
-                ann_df.columns = ['Ground Truth']
-                self.adata.obs['Ground Truth'] = ann_df.loc[self.adata.obs_names, 'Ground Truth']
-                self.logger.info("Ground truth labels loaded successfully")
-            else:
-                self.logger.info(f"No ground truth file found at {truth_file}")
-        except Exception as e:
-            self.logger.warning(f"Failed to load ground truth: {e}")
-    
     def _create_minimal_adata(self) -> 'sc.AnnData':
         """Create a minimal AnnData object from preprocessed data."""
         self.logger.info("Creating minimal AnnData object...")
@@ -555,21 +570,54 @@ class Harvest:
         self.logger.info(f"Created minimal AnnData with shape {adata.shape}")
         return adata
     
-    def _try_load_ground_truth(self, data_path: str, truth_file_suffix: str):
+    def _try_load_ground_truth(
+        self,
+        data_path: str,
+        truth_file_suffix: str,
+        truth_file: Optional[str] = None,
+        truth_id_column: Optional[str] = None,
+        truth_label_column: Optional[str] = None,
+        truth_sep: Optional[str] = None,
+    ):
         """Try to load ground truth labels if available."""
         try:
-            # Extract section ID from path
-            section_id = os.path.basename(data_path.rstrip('/'))
-            truth_file = os.path.join(data_path, f"{section_id}{truth_file_suffix}")
-            
-            if os.path.exists(truth_file):
-                self.logger.info(f"Loading ground truth from {truth_file}")
-                ann_df = pd.read_csv(truth_file, sep='\t', header=None, index_col=0)
-                ann_df.columns = ['Ground Truth']
-                self.adata.obs['Ground Truth'] = ann_df.loc[self.adata.obs_names, 'Ground Truth']
-                self.logger.info("Ground truth labels loaded successfully")
+            if truth_file:
+                truth_path = truth_file
+                if not os.path.isabs(truth_path) and not os.path.exists(truth_path):
+                    truth_path = os.path.join(data_path, truth_file)
             else:
-                self.logger.info("No ground truth file found")
+                section_id = os.path.basename(data_path.rstrip('/'))
+                truth_path = os.path.join(data_path, f"{section_id}{truth_file_suffix}")
+
+            if not os.path.exists(truth_path):
+                self.logger.info(f"No ground truth file found at {truth_path}")
+                return
+
+            self.logger.info(f"Loading ground truth from {truth_path}")
+            sep = truth_sep
+            if sep is None:
+                sep = "," if truth_path.endswith(".csv") else "\t"
+
+            if truth_file or truth_id_column or truth_label_column:
+                ann_df = pd.read_csv(truth_path, sep=sep)
+                id_column = truth_id_column or ann_df.columns[0]
+                label_column = truth_label_column or (
+                    "Ground Truth" if "Ground Truth" in ann_df.columns else ann_df.columns[-1]
+                )
+                if id_column not in ann_df.columns:
+                    raise ValueError(f"Ground truth id column '{id_column}' not found in {truth_path}")
+                if label_column not in ann_df.columns:
+                    raise ValueError(f"Ground truth label column '{label_column}' not found in {truth_path}")
+                labels = ann_df.set_index(id_column)[label_column]
+            else:
+                ann_df = pd.read_csv(truth_path, sep=sep, header=None, index_col=0)
+                labels = ann_df.iloc[:, 0]
+
+            aligned_labels = labels.reindex(self.adata.obs_names)
+            self.adata.obs["Ground Truth"] = aligned_labels.values
+            matched = int(aligned_labels.notna().sum())
+            total = int(self.adata.n_obs)
+            self.logger.info(f"Ground truth labels loaded successfully: matched {matched}/{total} spots")
         except Exception as e:
             self.logger.warning(f"Failed to load ground truth: {e}")
     

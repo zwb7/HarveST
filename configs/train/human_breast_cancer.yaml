@@ -1,0 +1,47 @@
+# HarveST training config for the Human Breast Cancer dataset.
+
+data:
+  sample_id: "Human_Breast_Cancer"
+  preprocessed_dir: "/data1/zhangwenbo/Code/Dataset/Human_Breast_Cancer/preprocessed"
+  original_data_path: "/data1/zhangwenbo/Code/Dataset/Human_Breast_Cancer/"
+  count_file: "filtered_feature_bc_matrix.h5"
+  adata_file:
+  n_top_genes: 3000
+  load_ground_truth: true
+  truth_file: "/data1/zhangwenbo/Code/Dataset/Human_Breast_Cancer/hbrc_truth.csv"
+  truth_id_column: "ID"
+  truth_label_column: "ground_truth"
+  truth_sep: ","
+  truth_file_suffix: "_truth.txt"
+  n_clusters: 20
+
+model:
+  hidden_2: 256
+  hidden_3: 64
+  coor_ratio: 0.8
+
+training:
+  epochs: 2000
+  learning_rate: 0.001
+  weight_decay: 0.000001
+  g_loss_w: 1.0
+  log_interval: 100
+  train_seed: 2023
+
+clustering:
+  n_clusters: 20
+  pca_n_components: 30
+  svm_ratio: 0.5
+  refine_radius: 50
+  cluster_seed: 2020
+
+runtime:
+  device: "cuda:7"
+  random_seed: 2023
+  r_libs_user: "/data1/zhangwenbo/R/library"
+
+output:
+  root: "./results/train"
+  run_name:
+  plot_results: true
+  save_results: true
