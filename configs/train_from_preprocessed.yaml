@@ -2,8 +2,8 @@
 
 data:
   sample_id: "151674"
-  preprocessed_dir: "./results/preprocessed/151674/<preprocess_run_id>"
-  original_data_path: "../Dataset/LIBD/151674"
+  preprocessed_dir: "/data1/zhangwenbo/Code/Dataset/LIBD/151674/preprocessed/"
+  original_data_path: "/data1/zhangwenbo/Code/Dataset/LIBD/151674"
   count_file: "filtered_feature_bc_matrix.h5"
   adata_file:
   n_top_genes: 3000
