@@ -1,19 +1,18 @@
-# HarveST training config for the Human Breast Cancer dataset.
+# HarveST training config for one LIBD sample.
+# Usage:
+#   python scripts/train_from_preprocessed.py --config configs/train/libd.yaml 151674
 
 data:
-  sample_id: "Human_Breast_Cancer"
-  preprocessed_dir: "/data1/zhangwenbo/Code/Dataset/Human_Breast_Cancer/preprocessed"
-  original_data_path: "/data1/zhangwenbo/Code/Dataset/Human_Breast_Cancer/"
+  sample_id: "{sample_id}"
+  preprocessed_dir: "/data1/zhangwenbo/Code/Dataset/LIBD/{sample_id}/preprocessed"
+  original_data_path: "/data1/zhangwenbo/Code/Dataset/LIBD/{sample_id}"
   count_file: "filtered_feature_bc_matrix.h5"
   adata_file:
   n_top_genes: 3000
   load_ground_truth: true
-  truth_file: "/data1/zhangwenbo/Code/Dataset/Human_Breast_Cancer/hbrc_truth.csv"
-  truth_id_column: "ID"
-  truth_label_column: "ground_truth"
-  truth_sep: ","
+  truth_file:
   truth_file_suffix: "_truth.txt"
-  n_clusters: 20
+  n_clusters: 7
 
 model:
   hidden_2: 256
@@ -21,7 +20,7 @@ model:
   coor_ratio: 0.8
 
 training:
-  epochs: 3000
+  epochs: 2000
   learning_rate: 0.001
   weight_decay: 0.000001
   g_loss_w: 1.0
@@ -29,7 +28,7 @@ training:
   train_seed: 2023
 
 clustering:
-  n_clusters: 20
+  n_clusters: 7
   pca_n_components: 30
   svm_ratio: 0.5
   refine_radius: 50

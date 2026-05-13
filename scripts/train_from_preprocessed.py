@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import os
 import sys
+from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -27,6 +28,30 @@ def _as_dict(config: Dict[str, Any], key: str) -> Dict[str, Any]:
     if not isinstance(value, dict):
         raise TypeError(f"Config field '{key}' must be a mapping.")
     return value
+
+
+def _format_config_value(value: Any, sample_id: Optional[str]) -> Any:
+    if isinstance(value, dict):
+        return {key: _format_config_value(item, sample_id) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_format_config_value(item, sample_id) for item in value]
+    if isinstance(value, str) and "{sample_id}" in value:
+        if not sample_id:
+            raise ValueError(
+                "Config contains '{sample_id}' placeholders. "
+                "Pass a sample id, for example: python scripts/train_from_preprocessed.py "
+                "--config configs/train/libd.yaml 151674"
+            )
+        return value.format(sample_id=sample_id)
+    return value
+
+
+def apply_sample_id(config: Dict[str, Any], sample_id: Optional[str]) -> Dict[str, Any]:
+    resolved = _format_config_value(deepcopy(config), sample_id)
+    if sample_id:
+        data_cfg = _as_dict(resolved, "data")
+        data_cfg["sample_id"] = str(sample_id)
+    return resolved
 
 
 def build_output_dir(config: Dict[str, Any]) -> str:
@@ -58,8 +83,8 @@ def save_resolved_config(config: Dict[str, Any], output_dir: str) -> None:
         yaml.safe_dump(config, file, sort_keys=False)
 
 
-def run(config_path: str) -> None:
-    config = Config.load_config(config_path)
+def run(config_path: str, sample_id: Optional[str] = None) -> None:
+    config = apply_sample_id(Config.load_config(config_path), sample_id)
     data_cfg = _as_dict(config, "data")
     model_cfg = dict(_as_dict(config, "model"))
     training_cfg = dict(_as_dict(config, "training"))
@@ -121,12 +146,22 @@ def parse_args() -> argparse.Namespace:
         description="Train, cluster, and evaluate HarveST from preprocessed matrices."
     )
     parser.add_argument("-c", "--config", required=True, help="Path to YAML config file.")
+    parser.add_argument(
+        "sample_id",
+        nargs="?",
+        help="Optional dataset sample id used to expand '{sample_id}' in config paths.",
+    )
+    parser.add_argument(
+        "--sample-id",
+        dest="sample_id_option",
+        help="Named form of sample id. Overrides the positional sample_id when both are provided.",
+    )
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
-    run(args.config)
+    run(args.config, sample_id=args.sample_id_option or args.sample_id)
 
 
 if __name__ == "__main__":
