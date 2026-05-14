@@ -1,0 +1,22 @@
+name: harvest
+channels:
+  - defaults
+dependencies:
+  - python=3.9
+  - numpy
+  - networkx
+  - pyyaml
+  - scipy
+  - tqdm
+  - pandas
+  - h5py
+  - matplotlib
+  - scikit-learn
+  - seaborn
+  - umap-learn
+  - numba
+  - pot
+  - anndata
+  - scanpy
+  - rpy2
+prefix: /home/zhangwenbo/.conda/envs/harvest
